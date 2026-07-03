@@ -70,6 +70,12 @@ msgstr "快速漫游接入值"
 msgid "Threshold for an bad RSSI"
 msgstr "快速漫游踢出值"
 
+msgid "Threshold for a good RSSI"
+msgstr "优良RSSI信号阈值"
+
+msgid "Threshold for a bad RSSI"
+msgstr "不良RSSI信号阈值"
+
 msgid "AP MODE Enable"
 msgstr "启用AP模式"
 
