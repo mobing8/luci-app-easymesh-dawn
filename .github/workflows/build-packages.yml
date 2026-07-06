@@ -56,11 +56,14 @@ jobs:
 
       - name: Collect output packages
         run: |
+          # 将路径中的 / 替换为 -，用于 artifact 命名
+          TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
+          echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
           mkdir -p output/${{ matrix.format }}/${{ matrix.target }}
           find sdk/bin/packages -name "*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: luci-app-easymesh-${{ matrix.version }}-${{ matrix.target//\//- }}
+          name: luci-app-easymesh-${{ matrix.version }}-${{ env.TARGET_SLUG }}
           path: output/${{ matrix.format }}/${{ matrix.target }}/*
