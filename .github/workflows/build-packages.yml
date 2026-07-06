@@ -35,8 +35,8 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
-            gettext git java-propose-classpath libelf-dev libncurses5-dev \
+          sudo apt-get install -y build-essential ccache file g++ gawk \
+            gettext git libelf-dev libncurses5-dev \
             libncursesw5-dev libssl-dev python3 python3-setuptools \
             rsync subversion swig time unzip wget xsltproc zlib1g-dev zstd
 
@@ -55,22 +55,20 @@ jobs:
           mkdir -p sdk/package/custom/luci-app-easymesh
           cp -r luasrc root po Makefile sdk/package/custom/luci-app-easymesh/
 
-      - name: Update feeds and compile
+      - name: Compile package
         run: |
           cd sdk
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-          make defconfig
-          # 编译主包+翻译包，两个包会同时生成
-          make package/luci-app-easymesh/compile V=s -j$(nproc)
+          # 只编译指定包，不执行 defconfig，不编译无关内核模块
+          make package/luci-app-easymesh/compile V=s -j$(nproc) IGNORE_ERRORS=m
 
       - name: Collect output packages
         run: |
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
           echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
           mkdir -p output/${{ matrix.format }}/${{ matrix.target }}
-          # 自动收集所有 ipk/apk 文件，包含主包和翻译包
-          find sdk/bin/packages -name "*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
+          # 收集主包+中文翻译包
+          find sdk/bin/packages -name "luci-app-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
+          find sdk/bin/packages -name "luci-i18n-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
