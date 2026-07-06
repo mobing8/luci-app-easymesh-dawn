@@ -52,8 +52,15 @@ jobs:
       - name: Add plugin to SDK
         run: |
           mkdir -p sdk/package/custom/luci-app-easymesh
-          # 明确只复制插件源码文件，避免把sdk目录自身卷进去
           cp -r luasrc root po Makefile sdk/package/custom/luci-app-easymesh/
+
+      - name: Pull LuCI feed and prepare build env
+        run: |
+          cd sdk
+          # 只更新 LuCI 软件源，提供 luci.mk 构建框架
+          ./scripts/feeds update luci
+          # 安装 luci-base 基础包，补齐构建依赖
+          ./scripts/feeds install luci-base
 
       - name: Generate minimal config
         run: |
