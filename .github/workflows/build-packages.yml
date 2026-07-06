@@ -51,22 +51,18 @@ jobs:
 
       - name: Add plugin to SDK
         run: |
-          mkdir -p sdk/package/custom
-          cp -r . sdk/package/custom/luci-app-easymesh/
-          # 清理仓库多余文件，避免干扰构建
-          rm -rf sdk/package/custom/luci-app-easymesh/.git
-          rm -rf sdk/package/custom/luci-app-easymesh/.github
+          mkdir -p sdk/package/custom/luci-app-easymesh
+          # 明确只复制插件源码文件，避免把sdk目录自身卷进去
+          cp -r luasrc root po Makefile sdk/package/custom/luci-app-easymesh/
 
       - name: Generate minimal config
         run: |
           cd sdk
-          # 仅生成基础默认配置，不启用任何额外包
           make defconfig V=0
 
       - name: Compile package
         run: |
           cd sdk
-          # 仅编译目标插件，忽略其他无关包的错误
           make package/luci-app-easymesh/compile V=s -j$(nproc) IGNORE_ERRORS=m
 
       - name: Collect packages
@@ -74,7 +70,6 @@ jobs:
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
           echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
           mkdir -p output/${{ matrix.format }}
-          # 收集主包 + 中文翻译包
           find sdk/bin/packages -name "luci-app-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/ \;
           find sdk/bin/packages -name "luci-i18n-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/ \;
 
