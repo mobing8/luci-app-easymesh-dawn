@@ -37,9 +37,10 @@ jobs:
 
       - name: Download OpenWrt SDK
         run: |
-          TARGET_UNDERSCORE=$(echo ${{ matrix.target }} | tr '/' '_')
-          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/openwrt-sdk-${{ matrix.version }}-${TARGET_UNDERSCORE}_*_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
-          echo "Downloading SDK from: $SDK_URL"
+          # 关键修复：target 路径斜杠替换为横杠，匹配官方 SDK 文件名
+          TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
+          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/openwrt-sdk-${{ matrix.version }}-${TARGET_SLUG}_*_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
+          echo "Downloading: $SDK_URL"
           wget -q $SDK_URL -O sdk.${{ matrix.sdk_suffix }}
           tar -xf sdk.${{ matrix.sdk_suffix }}
           mv openwrt-sdk-* sdk
