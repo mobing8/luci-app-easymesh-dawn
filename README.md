@@ -67,5 +67,5 @@ LuCI 管理界面 for EasyMesh。基于 LuCI 的 Batman-Adv mesh 网络配置界
 </small>
 
 ## 原始作者
-
+forked from kenzok78/luci-app-easymesh
 dz &lt;dingzhong110@gmail.com&gt;
