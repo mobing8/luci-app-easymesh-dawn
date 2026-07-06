@@ -13,10 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - version: "24.10.4"
+          - version: "24.10.7"
             format: "ipk"
-          - version: "25.12.0"
+            sdk_suffix: "tar.xz"
+          - version: "25.12.5"
             format: "apk"
+            sdk_suffix: "tar.zst"
         target:
           - ramips/mt7621
           - x86/64
@@ -31,14 +33,15 @@ jobs:
           sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
             gettext git java-propose-classpath libelf-dev libncurses5-dev \
             libncursesw5-dev libssl-dev python3 python3-distutils python3-setuptools \
-            rsync subversion swig time unzip wget xsltproc zlib1g-dev
+            rsync subversion swig time unzip wget xsltproc zlib1g-dev zstd
 
       - name: Download OpenWrt SDK
         run: |
           TARGET_UNDERSCORE=$(echo ${{ matrix.target }} | tr '/' '_')
-          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/openwrt-sdk-${{ matrix.version }}-${TARGET_UNDERSCORE}_*_musl.Linux-x86_64.tar.xz"
-          wget -q $SDK_URL -O sdk.tar.xz
-          tar -xf sdk.tar.xz
+          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/openwrt-sdk-${{ matrix.version }}-${TARGET_UNDERSCORE}_*_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
+          echo "Downloading SDK from: $SDK_URL"
+          wget -q $SDK_URL -O sdk.${{ matrix.sdk_suffix }}
+          tar -xf sdk.${{ matrix.sdk_suffix }}
           mv openwrt-sdk-* sdk
 
       - name: Copy plugin source to SDK
@@ -56,7 +59,6 @@ jobs:
 
       - name: Collect output packages
         run: |
-          # 将路径中的 / 替换为 -，用于 artifact 命名
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
           echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
           mkdir -p output/${{ matrix.format }}/${{ matrix.target }}
