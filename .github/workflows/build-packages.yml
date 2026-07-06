@@ -13,12 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 24.10 版本 → 输出 IPK 包
+          # 24.10 → 输出 .ipk
           - version: "24.10.7"
             format: "ipk"
             sdk_suffix: "tar.xz"
             gcc_version: "12.3.0"
-          # 25.12 版本 → 输出 APK 包
+          # 25.12 → 输出 .apk
           - version: "25.12.5"
             format: "apk"
             sdk_suffix: "tar.zst"
@@ -32,46 +32,54 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ccache file g++ gawk \
-            gettext git libelf-dev libncurses5-dev \
-            libncursesw5-dev libssl-dev python3 python3-setuptools \
-            rsync subversion swig time unzip wget xsltproc zlib1g-dev zstd
+          sudo apt-get install -y build-essential file gawk gettext git \
+            libelf-dev libncurses5-dev libssl-dev python3 \
+            rsync unzip wget xsltproc zlib1g-dev zstd
 
       - name: Download OpenWrt SDK
         run: |
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
           SDK_FILENAME="openwrt-sdk-${{ matrix.version }}-${TARGET_SLUG}_gcc-${{ matrix.gcc_version }}_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
           SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/${SDK_FILENAME}"
-          echo "Downloading: $SDK_URL"
+          echo "Download SDK: $SDK_URL"
           wget -q "$SDK_URL" -O sdk.${{ matrix.sdk_suffix }}
           tar -xf sdk.${{ matrix.sdk_suffix }}
           mv openwrt-sdk-* sdk
 
-      - name: Copy plugin source to SDK
+      - name: Add plugin to SDK
         run: |
-          mkdir -p sdk/package/custom/luci-app-easymesh
-          cp -r luasrc root po Makefile sdk/package/custom/luci-app-easymesh/
+          mkdir -p sdk/package/custom
+          cp -r . sdk/package/custom/luci-app-easymesh/
+          # 清理仓库多余文件，避免干扰构建
+          rm -rf sdk/package/custom/luci-app-easymesh/.git
+          rm -rf sdk/package/custom/luci-app-easymesh/.github
+
+      - name: Generate minimal config
+        run: |
+          cd sdk
+          # 仅生成基础默认配置，不启用任何额外包
+          make defconfig V=0
 
       - name: Compile package
         run: |
           cd sdk
-          # 只编译指定包，不执行 defconfig，不编译无关内核模块
+          # 仅编译目标插件，忽略其他无关包的错误
           make package/luci-app-easymesh/compile V=s -j$(nproc) IGNORE_ERRORS=m
 
-      - name: Collect output packages
+      - name: Collect packages
         run: |
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
           echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
-          mkdir -p output/${{ matrix.format }}/${{ matrix.target }}
-          # 收集主包+中文翻译包
-          find sdk/bin/packages -name "luci-app-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
-          find sdk/bin/packages -name "luci-i18n-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/${{ matrix.target }}/ \;
+          mkdir -p output/${{ matrix.format }}
+          # 收集主包 + 中文翻译包
+          find sdk/bin/packages -name "luci-app-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/ \;
+          find sdk/bin/packages -name "luci-i18n-easymesh*.${{ matrix.format }}" -exec cp {} output/${{ matrix.format }}/ \;
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: luci-app-easymesh-${{ matrix.version }}-${{ env.TARGET_SLUG }}
-          path: output/${{ matrix.format }}/${{ matrix.target }}/*
+          name: packages-${{ matrix.version }}-${{ env.TARGET_SLUG }}
+          path: output/${{ matrix.format }}/*
