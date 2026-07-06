@@ -18,10 +18,6 @@ LuCI 管理界面 for EasyMesh。基于 LuCI 的 Batman-Adv mesh 网络配置界
 </small>
 
 ## 依赖项
-
-## 界面预览
-<img width="1873" height="918" alt="image" src="https://github.com/user-attachments/assets/ba597f58-f27e-4170-a27c-445f7dfe2df1" />
-
 <small>
 
 - `kmod-cfg80211`
@@ -31,6 +27,9 @@ LuCI 管理界面 for EasyMesh。基于 LuCI 的 Batman-Adv mesh 网络配置界
 - `dawn`
 
 </small>
+
+## 界面预览
+<img width="1873" height="918" alt="image" src="https://github.com/user-attachments/assets/ba597f58-f27e-4170-a27c-445f7dfe2df1" />
 
 ## 硬件要求
 
