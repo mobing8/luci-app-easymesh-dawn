@@ -12,23 +12,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 顶层定义两个维度：版本 + 架构，自动生成笛卡尔积（2版本 × 3架构 = 6个任务）
-        version:
-          - "24.10.7"
-          - "25.12.5"
-        target:
-          - ramips/mt7621
-          - x86/64
-          - qualcommax/ipq60xx
-        # 按版本匹配对应参数：包格式、SDK后缀、GCC版本
         include:
-          # 24.10 → 输出 .ipk
+          # 24.10.7 仅支持 mt7621 / x86_64，无 ipq60xx
           - version: "24.10.7"
+            target: ramips/mt7621
             format: "ipk"
-            sdk_suffix: "tar.xz"
-            gcc_version: "12.3.0"
-          # 24.10 → 输出 .ipk
+            sdk_suffix: "tar.zst"
+            gcc_version: "13.3.0"
+          - version: "24.10.7"
+            target: x86/64
+            format: "ipk"
+            sdk_suffix: "tar.zst"
+            gcc_version: "13.3.0"
+          # 25.12.5 三个架构全支持
           - version: "25.12.5"
+            target: ramips/mt7621
+            format: "apk"
+            sdk_suffix: "tar.zst"
+            gcc_version: "14.3.0"
+          - version: "25.12.5"
+            target: x86/64
+            format: "apk"
+            sdk_suffix: "tar.zst"
+            gcc_version: "14.3.0"
+          - version: "25.12.5"
+            target: qualcommax/ipq60xx
             format: "apk"
             sdk_suffix: "tar.zst"
             gcc_version: "14.3.0"
@@ -62,9 +70,7 @@ jobs:
       - name: Pull LuCI feed and prepare build env
         run: |
           cd sdk
-          # 只更新 LuCI 软件源，提供 luci.mk 构建框架
           ./scripts/feeds update luci
-          # 安装 luci-base 基础包，补齐构建依赖
           ./scripts/feeds install luci-base
 
       - name: Generate minimal config
