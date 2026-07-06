@@ -19,28 +19,12 @@ jobs:
             format: "ipk"
             sdk_suffix: "tar.zst"
             gcc_version: "13.3.0"
-          - version: "24.10.7"
-            target: x86/64
-            format: "ipk"
-            sdk_suffix: "tar.zst"
-            gcc_version: "13.3.0"
           # 25.12.5 三个架构全支持
           - version: "25.12.5"
             target: ramips/mt7621
             format: "apk"
             sdk_suffix: "tar.zst"
             gcc_version: "14.3.0"
-          - version: "25.12.5"
-            target: x86/64
-            format: "apk"
-            sdk_suffix: "tar.zst"
-            gcc_version: "14.3.0"
-          - version: "25.12.5"
-            target: qualcommax/ipq60xx
-            format: "apk"
-            sdk_suffix: "tar.zst"
-            gcc_version: "14.3.0"
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -61,6 +45,7 @@ jobs:
           wget -q "$SDK_URL" -O sdk.${{ matrix.sdk_suffix }}
           tar -xf sdk.${{ matrix.sdk_suffix }}
           mv openwrt-sdk-* sdk
+          echo "TARGET_SLUG=$TARGET_SLUG" >> $GITHUB_ENV
 
       - name: Add plugin to SDK
         run: |
