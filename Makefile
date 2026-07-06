@@ -9,7 +9,7 @@ LUCI_TITLE:=LuCI Support for easymesh
 LUCI_DEPENDS:= +kmod-cfg80211 +batctl-default +kmod-batman-adv +wpad-mesh-openssl +dawn
 PKG_VERSION:=2.0
 PKG_RELEASE:=1
-PKG_MAINTAINER:=kenzok78 <https://github.com/kenzok78>
+PKG_MAINTAINER:=mobing8 <https://github.com/mobing8>
 LUCI_PKGARCH:=all
 
 # 新增：禁止luci.mk自动将翻译打入主包，由独立翻译包提供
