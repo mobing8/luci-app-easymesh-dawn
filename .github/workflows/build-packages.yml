@@ -12,21 +12,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # 顶层定义两个维度：版本 + 架构，自动生成笛卡尔积（2版本 × 3架构 = 6个任务）
+        version:
+          - "24.10.7"
+          - "25.12.5"
+        target:
+          - ramips/mt7621
+          - x86/64
+          - qualcommax/ipq60xx
+        # 按版本匹配对应参数：包格式、SDK后缀、GCC版本
         include:
           # 24.10 → 输出 .ipk
           - version: "24.10.7"
             format: "ipk"
             sdk_suffix: "tar.xz"
             gcc_version: "12.3.0"
-          # 25.12 → 输出 .apk
+          # 24.10 → 输出 .ipk
           - version: "25.12.5"
             format: "apk"
             sdk_suffix: "tar.zst"
             gcc_version: "14.3.0"
-        target:
-          - ramips/mt7621
-          - x86/64
-          - qualcommax/ipq60xx
 
     steps:
       - name: Checkout repository
