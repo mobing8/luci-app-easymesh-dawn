@@ -16,9 +16,11 @@ jobs:
           - version: "24.10.7"
             format: "ipk"
             sdk_suffix: "tar.xz"
+            gcc_version: "12.3.0"
           - version: "25.12.5"
             format: "apk"
             sdk_suffix: "tar.zst"
+            gcc_version: "14.3.0"
         target:
           - ramips/mt7621
           - x86/64
@@ -37,11 +39,11 @@ jobs:
 
       - name: Download OpenWrt SDK
         run: |
-          # 关键修复：target 路径斜杠替换为横杠，匹配官方 SDK 文件名
           TARGET_SLUG=$(echo ${{ matrix.target }} | tr '/' '-')
-          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/openwrt-sdk-${{ matrix.version }}-${TARGET_SLUG}_*_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
+          SDK_FILENAME="openwrt-sdk-${{ matrix.version }}-${TARGET_SLUG}_gcc-${{ matrix.gcc_version }}_musl.Linux-x86_64.${{ matrix.sdk_suffix }}"
+          SDK_URL="https://downloads.openwrt.org/releases/${{ matrix.version }}/targets/${{ matrix.target }}/${SDK_FILENAME}"
           echo "Downloading: $SDK_URL"
-          wget -q $SDK_URL -O sdk.${{ matrix.sdk_suffix }}
+          wget -q "$SDK_URL" -O sdk.${{ matrix.sdk_suffix }}
           tar -xf sdk.${{ matrix.sdk_suffix }}
           mv openwrt-sdk-* sdk
 
